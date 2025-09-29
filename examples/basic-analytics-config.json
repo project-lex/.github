@@ -1,0 +1,148 @@
+{
+  "metadata": {
+    "name": "Basic Analytics Pipeline",
+    "version": "1.0.0",
+    "description": "Example configuration for a simple analytics setup"
+  },
+  "dataSources": [
+    {
+      "id": "user_events",
+      "type": "webhook",
+      "endpoint": "/api/events",
+      "authentication": {
+        "type": "bearer_token",
+        "token": "${API_TOKEN}"
+      },
+      "schema": {
+        "userId": "string",
+        "event": "string",
+        "timestamp": "datetime",
+        "properties": "object"
+      }
+    },
+    {
+      "id": "database_metrics",
+      "type": "postgresql",
+      "connection": {
+        "host": "${DB_HOST}",
+        "database": "${DB_NAME}",
+        "username": "${DB_USER}",
+        "password": "${DB_PASSWORD}"
+      },
+      "query": "SELECT * FROM user_metrics WHERE created_at >= NOW() - INTERVAL '1 hour'"
+    }
+  ],
+  "pipelines": [
+    {
+      "id": "user_behavior_analysis",
+      "source": "user_events",
+      "transformations": [
+        {
+          "type": "filter",
+          "condition": "event IN ('page_view', 'click', 'purchase')"
+        },
+        {
+          "type": "enrich",
+          "fields": {
+            "session_id": "generateSessionId(userId, timestamp)"
+          }
+        },
+        {
+          "type": "aggregate",
+          "groupBy": ["userId", "event"],
+          "metrics": {
+            "count": "COUNT(*)",
+            "unique_sessions": "COUNT(DISTINCT session_id)"
+          },
+          "window": "1 hour"
+        }
+      ]
+    }
+  ],
+  "analytics": [
+    {
+      "id": "conversion_funnel",
+      "type": "funnel",
+      "steps": [
+        {"event": "page_view", "page": "/product"},
+        {"event": "click", "element": "add_to_cart"},
+        {"event": "purchase"}
+      ],
+      "timeWindow": "30 minutes",
+      "groupBy": "userId"
+    },
+    {
+      "id": "real_time_dashboard",
+      "type": "dashboard",
+      "metrics": [
+        {
+          "name": "Active Users",
+          "query": "SELECT COUNT(DISTINCT userId) FROM user_events WHERE timestamp >= NOW() - INTERVAL '5 minutes'"
+        },
+        {
+          "name": "Events per Minute",
+          "query": "SELECT COUNT(*) / 5 FROM user_events WHERE timestamp >= NOW() - INTERVAL '5 minutes'"
+        }
+      ],
+      "refreshInterval": "30 seconds"
+    }
+  ],
+  "outputs": [
+    {
+      "id": "analytics_warehouse",
+      "type": "postgresql",
+      "connection": {
+        "host": "${WAREHOUSE_HOST}",
+        "database": "${WAREHOUSE_DB}",
+        "username": "${WAREHOUSE_USER}",
+        "password": "${WAREHOUSE_PASSWORD}"
+      },
+      "tables": {
+        "user_behavior": "analytics.user_behavior_hourly",
+        "conversion_funnel": "analytics.conversion_metrics"
+      }
+    },
+    {
+      "id": "monitoring_alerts",
+      "type": "webhook",
+      "url": "${SLACK_WEBHOOK_URL}",
+      "triggers": [
+        {
+          "condition": "conversion_rate < 0.02",
+          "message": "⚠️ Conversion rate dropped below 2%"
+        },
+        {
+          "condition": "active_users < 10",
+          "message": "📉 Low user activity detected"
+        }
+      ]
+    }
+  ],
+  "monitoring": {
+    "healthChecks": [
+      {
+        "name": "Data Source Connectivity",
+        "interval": "5 minutes",
+        "checks": ["user_events", "database_metrics"]
+      }
+    ],
+    "performance": {
+      "alertThresholds": {
+        "processingLatency": "30 seconds",
+        "memoryUsage": "80%",
+        "errorRate": "5%"
+      }
+    }
+  },
+  "settings": {
+    "timezone": "UTC",
+    "retentionPolicy": {
+      "rawData": "30 days",
+      "aggregatedData": "1 year"
+    },
+    "privacy": {
+      "anonymizeUserIds": true,
+      "excludeFields": ["email", "phone"]
+    }
+  }
+}

@@ -60,7 +60,7 @@ When reporting issues or requesting features, please use our issue templates:
 ## 📚 Resources
 
 - [Documentation](https://docs.project-lex.org) (coming soon)
-- [Configuration Examples](examples/) (coming soon)
+- [Configuration Examples](examples/) - JSON configuration examples and guides
 - [API Reference](https://api.project-lex.org) (coming soon)
 
 ## 📄 License
