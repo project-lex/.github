@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Documentation
+    url: https://docs.project-lex.org
+    about: Check our comprehensive documentation for configuration guides and examples
+  - name: 💬 Community Discussions
+    url: https://github.com/project-lex/.github/discussions
+    about: Ask questions and discuss analytics use cases with the community
+  - name: 🔐 Security Vulnerability
+    url: mailto:security@project-lex.org
+    about: Please report security vulnerabilities privately via email (see SECURITY.md)
