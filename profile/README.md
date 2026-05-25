@@ -23,15 +23,7 @@ The platform uses JSON configuration files to define:
 - Output destinations and formats
 - Monitoring and alerting settings
 
-Example configuration structure:
-```json
-{
-  "dataSources": [...],
-  "pipelines": [...],
-  "analytics": [...],
-  "outputs": [...]
-}
-```
+⚠️ There is no defined structure yet. Please be patient. ⚠️
 
 ## 🤝 Contributing
 
